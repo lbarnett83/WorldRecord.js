@@ -3,20 +3,20 @@
  *
  *
  * Copyright (c) 2018 Joseph Read
- * 
+ *
  * LICENSE:
- * 
+ *
  * This library is free software; you can redistribute it
  * and/or modify it under the terms of the GNU Lesser General
  * Public License as published by the Free Software Foundation;
  * either version 2.1 of the License, or (at your option) any
  * later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
@@ -38,9 +38,11 @@
         var streamTitle = '';
         var categoryId = '';
         var worldrecordMessage = '';
+        var categoryName = '';
+        var gameName = '';
 
         /*
-            Get the Game Id from the Current Stream Game    
+            Get the Game Id from the Current Stream Game
         */
 
         function findGameID(gamename){
@@ -60,11 +62,14 @@
             url_current_game = 'https://www.speedrun.com/api/v1/games/' + gameId + '/categories'
             getCategory = $.customAPI.get(url_current_game).content;
             getCategoryJSON = JSON.parse(getCategory);
+            streamTitle = streamTitle.toLowerCase();
 
             for(var i = 0; i < getCategoryJSON.data.length; i++){
-                findcat = streamTitle.includes(getCategoryJSON.data[i].name);
+                findcat = streamTitle.includes(getCategoryJSON.data[i].name.toLowerCase());
                 if (findcat){
                     categoryId = getCategoryJSON.data[i].id;
+                    categoryName = getCategoryJSON.data[i].name;
+                    return;
                     //$.consoleLn(getCategoryJSON.data[i].name + " | " +categoryId);
                 }
             }
@@ -80,7 +85,7 @@
             worldrecordJSON = JSON.parse(getworldrecord);
 
             userID = worldrecordJSON.data[0].runs[0].run.players[0].id;
-            recordTime = worldrecordJSON.data[0].runs[0].run.times.realtime;
+            recordTime = worldrecordJSON.data[0].runs[0].run.times.primary;
 
             //$.consoleLn(userID + ' ' + recordTime);
 
@@ -97,7 +102,7 @@
             recordTimeFix = recordTimeFix.replace("M", ':');
             recordTimeFix = recordTimeFix.replace('S', '');
 
-            worldrecordMessage = 'Current World Record Holder : ' + realName + ' with a time of ' + recordTimeFix;
+            worldrecordMessage = 'Current ' + categoryName + ' World Record Holder: ' + realName + ' with a time of ' + recordTimeFix;
 
         }
 
@@ -107,7 +112,7 @@
 
         function getWR(){
             $.consoleLn('Loading World Record Data');
-                findGameID(streamGame);               
+                findGameID(streamGame);
                 findCurrentCategory(gameID, streamTitle);
                 getWorldRecordHolder(categoryId);
 
@@ -133,7 +138,7 @@
 
     /*
         Fires when the stream game changes
-        Reloads the World Record Data 
+        Reloads the World Record Data
     */
 
     $.bind('twitchGameChange', function(event){
@@ -144,7 +149,7 @@
 
     /*
         Fires when the stream title changes
-        Reloads the World Record Data 
+        Reloads the World Record Data
     */
 
     $.bind('twitchTitleChange', function(event){
@@ -165,7 +170,7 @@
         var args = event.getArgs();
 
         if (command.equalsIgnoreCase('wr')) {
-            if (args.length > 0) {       
+            if (args.length > 0) {
                 if (args[0].equalsIgnoreCase('game')) {
                     var argsmessage = '';
                     for (var i = 1; i < args.length; i++) {
@@ -173,7 +178,7 @@
                     }
                     streamGame = argsmessage;
                     $.consoleLn(argsmessage);
-                }  
+                }
                 else if (args[0].equalsIgnoreCase('category')) {
                     var argsmessage = '';
                     for (var i = 1; i < args.length; i++) {
@@ -183,13 +188,13 @@
                     $.consoleLn(argsmessage);
                 }
             }
-            else{                    
+            else{
                 if (worldrecordMessage == '') {
                     $.say('Error getting World Record Data [Is the stream offline?]');
                 }
                 else{
-                    $.say(worldrecordMessage);            
-                }                
+                    $.say(worldrecordMessage);
+                }
             }
 
         }

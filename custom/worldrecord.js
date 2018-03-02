@@ -168,38 +168,46 @@
         var sender = event.getSender();
         var arguments = event.getArguments();
         var args = event.getArgs();
+        var action;
+        var actionArgs;
 
         if (command.equalsIgnoreCase('wr')) {
-            if (args.length > 0) {
-                if (args[0].equalsIgnoreCase('game')) {
-                    var argsmessage = '';
-                    for (var i = 1; i < args.length; i++) {
-                        argsmessage += args[i]  + ' ';
-                    }
-                    streamGame = argsmessage;
-                    $.consoleLn(argsmessage);
-                }
-                else if (args[0].equalsIgnoreCase('category')) {
-                    var argsmessage = '';
-                    for (var i = 1; i < args.length; i++) {
-                        argsmessage += args[i] + ' ';
-                    }
-                    streamTitle = argsmessage;
-                    $.consoleLn(argsmessage);
+            action = args[0];
+            actionArgs = args.splice(1);
+
+            if (!action) {
+                if (!worldrecordMessage) {
+                    $.say($.whisperPrefix(sender) + $.lang.get('wr.error'));
+                    return;
+                } else {
+                    $.say($.whisperPrefix(sender) + worldrecordMessage);
+                    return;
                 }
             }
-            else{
-                if (worldrecordMessage == '') {
-                    $.say('Error getting World Record Data [Is the stream offline?]');
+
+            if (action.equalsIgnoreCase('game')) {
+                if (!actionArgs[0]) {
+                    $.say($.whisperPrefix(sender) + $.lang.get('wr.game.usage'));
+                    return;
                 }
-                else{
-                    $.say(worldrecordMessage);
+                streamGame = actionArgs.join(' ');
+                $.say($.whisperPrefix(sender) + $.lang.get('wr.game.changed', streamGame));
+                return;
+            }
+
+            if (action.equalsIgnoreCase('category')) {
+                if (!actionArgs[0]) {
+                    $.say($.whisperPrefix(sender) + $.lang.get('wr.category.usage'));
+                    return;
                 }
+                streamTitle = actionArgs.join(' ');
+                $.say($.whisperPrefix(sender) + $.lang.get('wr.category.changed', streamTitle));
+                return;
             }
 
         }
 
-        else if(command.equalsIgnoreCase('reloadwr')){
+        if (command.equalsIgnoreCase('reloadwr')){
             getWR();
         }
     });
@@ -218,6 +226,9 @@
 
             $.registerChatCommand('./custom/worldrecord.js', 'wr', 7);
             $.registerChatCommand('./custom/worldrecord.js', 'reloadwr', 7);
+
+            $.registerChatSubcommand('wr', 'game', 1);
+            $.registerChatSubcommand('wr', 'category', 1);
         }
     });
 
